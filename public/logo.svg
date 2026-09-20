@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3.7 6 16.6 12">
+  <defs>
+    <!-- Cool ring (left) -->
+    <linearGradient id="gA" gradientUnits="userSpaceOnUse" x1="4" y1="7" x2="15" y2="18">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <!-- Warm ring (right) -->
+    <linearGradient id="gB" gradientUnits="userSpaceOnUse" x1="9" y1="7" x2="20" y2="18">
+      <stop offset="0" stop-color="#c026d3"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Two gradient ring outlines; centers and the overlap stay transparent -->
+  <circle cx="9.7" cy="12" r="4.8" fill="none" stroke="url(#gA)" stroke-width="2"/>
+  <circle cx="14.3" cy="12" r="4.8" fill="none" stroke="url(#gB)" stroke-width="2"/>
+</svg>

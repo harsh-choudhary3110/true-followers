@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Signature Instagram-flavored gradient, used deliberately for accents. */
+    --grad: linear-gradient(120deg, #7c3aed 0%, #c026d3 42%, #ec4899 68%, #fb923c 100%);
+    --grad-soft: linear-gradient(120deg, #ede9fe 0%, #fae8ff 50%, #ffedd5 100%);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased dark:bg-[#080a12] dark:text-slate-100;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* WebKit / Chromium / Safari scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.45);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(100, 116, 139, 0.7);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.33);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox (webkit pseudo-elements don't exist there) — standard props only.
+     Scoped to Gecko so it doesn't disable the webkit styling in Chromium. */
+  @supports (-moz-orient: inline) {
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+    }
+    html.dark {
+      scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+    }
+  }
+  /* Headings use the Space Grotesk display face for a sharper, modern edge. */
+  h1,
+  h2,
+  h3 {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    @apply bg-fuchsia-500/25;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#080a12] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  /* Gradient primary with a soft colored glow that intensifies on hover. */
+  .btn-primary {
+    @apply btn text-white shadow-lg shadow-fuchsia-500/25 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-fuchsia-500/40 active:translate-y-0;
+    background-image: var(--grad);
+    background-size: 140% 140%;
+    background-position: 0% 50%;
+  }
+  .btn-primary:hover {
+    background-position: 100% 50%;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-200 bg-white/80 text-slate-700 backdrop-blur hover:border-slate-300 hover:bg-white hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10;
+  }
+  .btn-ghost {
+    @apply btn text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-white/[0.08] dark:bg-white/[0.03];
+  }
+  /* Interactive card: subtle lift + gradient-tinted border on hover. */
+  .card-hover {
+    @apply card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 hover:border-fuchsia-300/60 dark:hover:border-fuchsia-500/30 dark:hover:shadow-fuchsia-500/5;
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-100;
+  }
+
+  /* Gradient text for headline highlights. */
+  .text-gradient {
+    background-image: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  /* Solid gradient fill (backgrounds, CTA, icon tiles). */
+  .bg-gradient-brand {
+    background-image: var(--grad);
+  }
+  /* Gradient icon tile with a white glyph. */
+  .icon-tile {
+    @apply grid place-items-center rounded-xl text-white shadow-md shadow-fuchsia-500/20;
+    background-image: var(--grad);
+  }
+  /* Thin gradient ring wrapper (1px border via padding trick). */
+  .ring-gradient {
+    background-image: var(--grad);
+  }
+}
+
+@layer utilities {
+  /* Hide the scrollbar on horizontally scrollable rows (mobile tab strips). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes tf-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes tf-pop {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .animate-fade {
+    animation: tf-fade 0.15s ease-out;
+  }
+  .animate-pop {
+    animation: tf-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}

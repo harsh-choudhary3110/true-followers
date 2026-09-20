@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c026d3" />
+
+    <!-- Per-page title / description / canonical / Open Graph / Twitter are pre-rendered
+         into each page by the <Seo> component (vite-react-ssg <Head>). -->
+
+    <!-- Structured data: the tool itself (site-wide) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "True Followers",
+        "url": "__SITE_URL__/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web",
+        "browserRequirements": "Requires JavaScript",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Compare your Instagram followers and following privately in your browser. Find who doesn't follow you back, who you don't follow back, mutuals, and track unfollowers — no login, nothing uploaded.",
+        "isAccessibleForFree": true
+      }
+    </script>
+
+    <!-- Prevent theme flash: set the class before React mounts -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('tf-theme');
+          if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
