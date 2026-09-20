@@ -18,7 +18,7 @@ export default function Privacy() {
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
       <Seo
         title="Privacy — True Followers"
-        description="How True Followers handles your data: everything runs in your browser, nothing is uploaded, no accounts, no tracking, no cookies. Your Instagram data never leaves your device."
+        description="How True Followers handles your data: everything runs in your browser, nothing is uploaded, no accounts, no ads, no cookies. Your Instagram data never leaves your device."
         path="/privacy"
       />
 
@@ -64,7 +64,11 @@ export default function Privacy() {
 
         <Section title="What we don't do">
           <ul className="list-disc space-y-1 pl-5">
-            <li>No accounts, no tracking, no advertising cookies.</li>
+            <li>No accounts, no ads, no cookies, no cross-site tracking or profiling.</li>
+            <li>
+              The only thing we measure is anonymous, cookieless page-view counts (via Vercel Web
+              Analytics) — it never sees your Instagram data and never identifies you.
+            </li>
             <li>We never sell or share your data — it never leaves your device, so there's nothing to sell.</li>
           </ul>
         </Section>

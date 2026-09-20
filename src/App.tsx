@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import type { RouteRecord } from 'vite-react-ssg';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 import { Loader2 } from 'lucide-react';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -52,6 +53,9 @@ function RootLayout() {
           error: { iconTheme: { primary: '#f43f5e', secondary: '#ffffff' } },
         }}
       />
+
+      {/* Vercel Web Analytics — cookieless, anonymous page-view counts */}
+      <Analytics />
     </Layout>
   );
 }

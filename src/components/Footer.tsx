@@ -14,7 +14,7 @@ export default function Footer() {
               entirely in your browser and never uploaded.
             </p>
             <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              <ShieldCheck className="h-4 w-4" /> 100% client-side · No login · No tracking
+              <ShieldCheck className="h-4 w-4" /> 100% client-side · No login · No cookies
             </p>
           </div>
 
@@ -39,7 +39,7 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     className="hover:text-fuchsia-600"
                   >
-                    Request your data
+                    Get your Instagram data
                   </a>
                 </li>
               </ul>
@@ -50,9 +50,11 @@ export default function Footer() {
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-xs text-slate-400 sm:flex-row dark:border-white/[0.08]">
           <p>© {new Date().getFullYear()} True Followers. Not affiliated with Instagram or Meta.</p>
           <a
-            href="#"
+            href="https://github.com/harsh-choudhary3110/true-followers"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 hover:text-fuchsia-600"
-            aria-label="Source code"
+            aria-label="View source code on GitHub"
           >
             <Github className="h-4 w-4" /> Open source
           </a>
