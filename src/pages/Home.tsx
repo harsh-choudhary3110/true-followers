@@ -218,7 +218,7 @@ export default function Home() {
             Three simple steps
           </h2>
         </div>
-        <div className="relative mt-14 grid gap-10 md:grid-cols-3">
+        <div className="relative mt-12 grid gap-8 sm:mt-14 md:grid-cols-3 md:gap-10">
           {[
             {
               n: "1",
@@ -236,20 +236,26 @@ export default function Home() {
               d: "Browse who doesn't follow back, your mutuals, and more. Export any list to CSV.",
             },
           ].map((s, i, arr) => (
-            <div key={s.n} className="relative text-center md:text-left">
-              {/* connector to the next step only (never after the last) */}
+            <div key={s.n} className="relative flex gap-4 text-left md:block">
+              {/* vertical connector between steps (mobile only) */}
+              {i < arr.length - 1 && (
+                <span className="pointer-events-none absolute bottom-[-2rem] left-6 top-12 w-px bg-gradient-to-b from-fuchsia-400/70 to-fuchsia-300/30 md:hidden dark:from-fuchsia-500/40 dark:to-fuchsia-500/10" />
+              )}
+              {/* horizontal connector to the next step (desktop only, never after the last) */}
               {i < arr.length - 1 && (
                 <span className="pointer-events-none absolute left-6 right-[-4rem] top-6 hidden h-px bg-gradient-to-r from-fuchsia-400/70 to-fuchsia-300/40 md:block dark:from-fuchsia-500/40 dark:to-fuchsia-500/20" />
               )}
-              <span className="icon-tile relative z-10 mx-auto h-12 w-12 text-lg font-bold md:mx-0">
+              <span className="icon-tile relative z-10 h-12 w-12 shrink-0 text-lg font-bold">
                 {s.n}
               </span>
-              <h3 className="mt-5 text-lg font-semibold text-slate-900 dark:text-white">
-                {s.t}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                {s.d}
-              </p>
+              <div className="md:mt-5">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {s.t}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                  {s.d}
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -332,18 +338,18 @@ export default function Home() {
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.q} className="card flex gap-4 p-6">
-                <span className="icon-tile h-11 w-11 shrink-0">
-                  <Icon className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <div key={item.q} className="card p-5 sm:p-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <span className="icon-tile h-10 w-10 shrink-0 sm:h-11 sm:w-11">
+                    <Icon className="h-5 w-5" strokeWidth={2} />
+                  </span>
+                  <h3 className="text-base font-semibold text-slate-900 sm:text-lg dark:text-white">
                     {item.q}
                   </h3>
-                  <p className="mt-1.5 leading-relaxed text-slate-600 dark:text-slate-400">
-                    {item.a}
-                  </p>
                 </div>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
+                  {item.a}
+                </p>
               </div>
             );
           })}
