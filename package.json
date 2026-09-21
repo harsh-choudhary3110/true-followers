@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "True Followers — compare your Instagram followers and following, 100% in your browser.",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "start": "vite",
