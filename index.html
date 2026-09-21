@@ -11,7 +11,10 @@
     <meta name="theme-color" content="#c026d3" />
 
     <!-- Google Search Console ownership verification -->
-    <meta name="google-site-verification" content="CieITtskj0tCGCIiv0sImOkCBOCPBdsQHOtogE3uP6o" />
+    <meta
+      name="google-site-verification"
+      content="N0qdCvGJJKtDfkRWjIHLBDP6BlZlTIrMFD1nx0hv4Ww"
+    />
 
     <!-- Per-page title / description / canonical / Open Graph / Twitter are pre-rendered
          into each page by the <Seo> component (vite-react-ssg <Head>). -->
@@ -36,9 +39,12 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('tf-theme');
-          if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
+          var t = localStorage.getItem("tf-theme");
+          if (
+            t === "dark" ||
+            (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
           }
         } catch (e) {}
       })();
