@@ -1,0 +1,25 @@
+{
+  "name": "True Followers",
+  "short_name": "True Followers",
+  "description": "Free, private Instagram follower tracker. Find who doesn't follow you back — 100% in your browser.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#c026d3",
+  "background_color": "#0f1119",
+  "display": "standalone"
+}

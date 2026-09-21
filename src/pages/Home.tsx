@@ -107,7 +107,7 @@ function HeroPreview() {
           </div>
         </div>
         {/* bottom fade — implies the list continues */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-white dark:to-[#0f1119]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white dark:to-[#0f1119]" />
       </div>
     </div>
   );

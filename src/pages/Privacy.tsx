@@ -72,6 +72,14 @@ export default function Privacy() {
             <li>We never sell or share your data — it never leaves your device, so there's nothing to sell.</li>
           </ul>
         </Section>
+
+        <Section title="Not affiliated with Instagram">
+          <p>
+            True Followers is an independent tool. It is not affiliated with, endorsed by, or
+            connected to Instagram or Meta. We never log into or contact Instagram on your behalf —
+            you only use the official data export you download from Instagram yourself.
+          </p>
+        </Section>
       </div>
 
       <p className="mt-10 text-sm text-slate-500 dark:text-slate-400">

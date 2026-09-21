@@ -154,4 +154,23 @@
   .animate-pop {
     animation: tf-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
+  /* Soft radial scrim behind the floating install button so its edges don't
+     clash with page content underneath. Fades the page bg out to transparent. */
+  .install-scrim {
+    background: radial-gradient(
+      300px 240px at 100% 100%,
+      rgb(255 255 255 / 0.95) 0%,
+      rgb(255 255 255 / 0.9) 35%,
+      rgb(255 255 255 / 0) 72%
+    );
+  }
+  .dark .install-scrim {
+    background: radial-gradient(
+      300px 240px at 100% 100%,
+      rgb(8 10 18 / 0.95) 0%,
+      rgb(8 10 18 / 0.9) 35%,
+      rgb(8 10 18 / 0) 72%
+    );
+  }
 }

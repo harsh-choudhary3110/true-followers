@@ -134,7 +134,7 @@ export default function Upload() {
                 <span className="font-medium">We read:</span>
                 <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 font-medium dark:border-white/10 dark:bg-white/5">
                   <FileJson className="h-3.5 w-3.5 text-fuchsia-500" />{" "}
-                  followers_1.json
+                  followers_*.json
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 font-medium dark:border-white/10 dark:bg-white/5">
                   <FileJson className="h-3.5 w-3.5 text-fuchsia-500" />{" "}

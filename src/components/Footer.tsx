@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Github, ShieldCheck } from 'lucide-react';
 import Logo from './Logo';
+import InstallButton from './InstallButton';
 
 export default function Footer() {
   return (
@@ -16,6 +17,7 @@ export default function Footer() {
             <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="h-4 w-4" /> 100% client-side · No login · No cookies
             </p>
+            <InstallButton variant="inline" />
           </div>
 
           <div className="grid grid-cols-2 gap-8 text-sm">

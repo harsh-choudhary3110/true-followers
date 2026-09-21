@@ -52,25 +52,31 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {open && (
-        <div className="border-t border-slate-200 px-4 py-3 md:hidden dark:border-white/[0.08]">
-          <div className="flex flex-col gap-3">
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                className={linkClass}
-                onClick={() => setOpen(false)}
-              >
-                {l.label}
-              </NavLink>
-            ))}
-            <Link to="/upload" className="btn-primary" onClick={() => setOpen(false)}>
-              Upload export
-            </Link>
+      <div
+        className={`grid overflow-hidden transition-all duration-300 ease-out md:hidden ${
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="min-h-0">
+          <div className="border-t border-slate-200 px-4 py-3 dark:border-white/[0.08]">
+            <div className="flex flex-col gap-3">
+              {links.map((l) => (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  className={linkClass}
+                  onClick={() => setOpen(false)}
+                >
+                  {l.label}
+                </NavLink>
+              ))}
+              <Link to="/upload" className="btn-primary" onClick={() => setOpen(false)}>
+                Upload export
+              </Link>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

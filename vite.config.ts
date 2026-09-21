@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,6 +10,22 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      // Progressive Web App: precache the built shell so the tool works offline
+      // and can be installed. Reuses the existing public/site.webmanifest.
+      VitePWA({
+        registerType: 'autoUpdate',
+        injectRegister: 'inline',
+        // We ship our own manifest at public/site.webmanifest (already linked in
+        // index.html), so the plugin only handles the service worker.
+        manifest: false,
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,json,xml,txt}'],
+          // Deep links / client-only routes (e.g. /results) fall back to the shell.
+          navigateFallback: '/index.html',
+          navigateFallbackDenylist: [/^\/sitemap\.xml$/, /^\/robots\.txt$/, /\.[^/]+$/],
+          cleanupOutdatedCaches: true,
+        },
+      }),
       // Inject the site URL into index.html's __SITE_URL__ tokens at build time.
       {
         name: 'inject-site-url',
