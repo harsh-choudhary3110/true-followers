@@ -23,7 +23,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/70 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#080a12]/70">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
-        <Link to="/" aria-label="True Followers home">
+        <Link to="/" aria-label="True Followers home" className="inline-flex items-center">
           <Logo />
         </Link>
 
