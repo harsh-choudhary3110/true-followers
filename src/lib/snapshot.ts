@@ -10,7 +10,9 @@ import type { Account, ParsedData, Snapshot } from './types';
 const DB_NAME = 'truefollowers';
 const STORE = 'snapshots';
 const DB_VERSION = 1;
-const MAX_SNAPSHOTS = 50;
+// A high safety limit — normal use never reaches it; it just stops storage from
+// growing unbounded (e.g. a huge import). Oldest snapshots are trimmed first.
+const MAX_SNAPSHOTS = 1000;
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -65,7 +67,7 @@ export async function loadSnapshots(): Promise<Snapshot[]> {
   }
 }
 
-/** Keep only the newest MAX_SNAPSHOTS, deleting the rest. */
+/** Keep only the newest MAX_SNAPSHOTS, deleting the oldest beyond the cap. */
 async function trimToCap(): Promise<void> {
   const all = await loadSnapshots();
   if (all.length <= MAX_SNAPSHOTS) return;

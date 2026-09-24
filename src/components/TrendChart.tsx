@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore } from "../store";
+import Select from "./Select";
 
 export interface TrendPoint {
   date: string; // ISO
@@ -25,8 +26,37 @@ const COLORS = {
   },
 };
 
-const VB_W = 800;
-const VB_H = 340;
+// Desktop is wide; on phones a taller, narrower box gives the plot vertical
+// room and makes the (viewBox-relative) axis labels read at a legible size.
+const VB = {
+  wide: { w: 800, h: 340 },
+  mobile: { w: 440, h: 380 },
+};
+
+// Windowing options for long histories. `days: null` means "all time".
+const RANGES: { label: string; value: string; days: number | null }[] = [
+  { label: "Last 7 days", value: "7", days: 7 },
+  { label: "Last 30 days", value: "30", days: 30 },
+  { label: "Last 90 days", value: "90", days: 90 },
+  { label: "Last year", value: "365", days: 365 },
+  { label: "All time", value: "all", days: null },
+];
+
+// Tracks the narrow breakpoint so the chart can swap to a taller viewBox.
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 640px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return isMobile;
+}
 
 function niceNum(x: number): number {
   const exp = Math.floor(Math.log10(x || 1));
@@ -53,18 +83,71 @@ function niceScale(min: number, max: number, count = 4) {
 const fmtCompact = (v: number) =>
   new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(v);
 
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
+// Smooth the line with a Catmull-Rom spline (converted to cubic béziers) so the
+// trend reads as a soft curve instead of jagged straight segments. Tension is
+// kept low (/6) to hug the data and avoid wild overshoot on noisy points.
+function smoothPath(pts: { x: number; y: number }[]): string {
+  if (pts.length === 0) return "";
+  if (pts.length < 3)
+    return pts
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+      .join(" ");
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
 
-export default function TrendChart({ points }: { points: TrendPoint[] }) {
+export default function TrendChart({
+  points: allPoints,
+}: {
+  points: TrendPoint[];
+}) {
   const theme = useStore((s) => s.theme);
   const c = COLORS[theme];
+  const isMobile = useIsMobile();
+  const { w: VB_W, h: VB_H } = isMobile ? VB.mobile : VB.wide;
   const svgRef = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
-  const [showTable, setShowTable] = useState(false);
+  // Pixel left for the tooltip, clamped so it never spills past either edge.
+  const [tipLeft, setTipLeft] = useState(0);
+  // null = all time; otherwise a window in days ending at the latest snapshot.
+  const [rangeDays, setRangeDays] = useState<number | null>(null);
+
+  // Total span of the history — decides which range buttons make sense.
+  const spanDays =
+    allPoints.length > 1
+      ? (new Date(allPoints[allPoints.length - 1].date).getTime() -
+          new Date(allPoints[0].date).getTime()) /
+        86_400_000
+      : 0;
+  // Only offer a window shorter than the data itself; "All" always shows.
+  const ranges = RANGES.filter((r) => r.days === null || r.days < spanDays);
+  const showRanges = ranges.length > 1;
+
+  // Apply the selected window, counting back from the most recent snapshot.
+  let points = allPoints;
+  if (rangeDays !== null && allPoints.length > 1) {
+    const cutoff =
+      new Date(allPoints[allPoints.length - 1].date).getTime() -
+      rangeDays * 86_400_000;
+    const windowed = allPoints.filter(
+      (p) => new Date(p.date).getTime() >= cutoff,
+    );
+    // Keep at least two points so the chart still draws a line.
+    points = windowed.length >= 2 ? windowed : allPoints.slice(-2);
+  }
 
   const n = points.length;
   const values = points.flatMap((p) => [p.followers, p.following]);
@@ -72,8 +155,11 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
 
   // Left gutter auto-sizes to the widest y-label so numbers sit snug and the
   // line starts right after them; right margin is just the marker radius.
+  // No x-axis date labels or per-point dots — the chart stays a clean pair of
+  // trend lines; the date and values surface only on hover, so bottom needs
+  // just a little breathing room.
   const labelWidth = Math.max(...scale.ticks.map((t) => fmtCompact(t).length)) * 7;
-  const M = { top: 16, right: 8, bottom: 38, left: labelWidth + 10 };
+  const M = { top: 16, right: 8, bottom: 16, left: labelWidth + 10 };
   const PLOT_W = VB_W - M.left - M.right;
   const PLOT_H = VB_H - M.top - M.bottom;
 
@@ -83,12 +169,7 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
     M.top + PLOT_H - ((v - scale.min) / (scale.max - scale.min)) * PLOT_H;
 
   const linePath = (key: "followers" | "following") =>
-    points
-      .map(
-        (p, i) =>
-          `${i === 0 ? "M" : "L"} ${xFor(i).toFixed(1)} ${yFor(p[key]).toFixed(1)}`,
-      )
-      .join(" ");
+    smoothPath(points.map((p, i) => ({ x: xFor(i), y: yFor(p[key]) })));
 
   // Map a pointer event to the nearest data index.
   function handleMove(e: React.PointerEvent<SVGSVGElement>) {
@@ -103,7 +184,32 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
     setHover(idx);
   }
 
+  // On touch, capture the pointer so scrubbing keeps tracking even if the
+  // thumb strays outside the svg, and show the tooltip immediately on tap.
+  function handleDown(e: React.PointerEvent<SVGSVGElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    handleMove(e);
+  }
+
   const latest = points[n - 1];
+
+  // Position the tooltip at the hovered point but clamp it inside the chart so
+  // it never overflows the container (and thus the window) at the edges. Runs
+  // before paint, so there's no visible jump.
+  useLayoutEffect(() => {
+    if (hover === null) return;
+    const wrap = wrapRef.current;
+    const tip = tipRef.current;
+    if (!wrap || !tip) return;
+    const wrapW = wrap.clientWidth;
+    const tipW = tip.offsetWidth;
+    const pad = 4;
+    const pointX = (xFor(hover) / VB_W) * wrapW;
+    const left = Math.max(pad, Math.min(pointX - tipW / 2, wrapW - tipW - pad));
+    setTipLeft(left);
+    // xFor depends on n/M/VB_W; those are captured in this render's closure.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hover, VB_W, n, rangeDays]);
 
   return (
     <div className="card p-5">
@@ -135,56 +241,31 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
             </span>
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowTable((v) => !v)}
-          className="btn-ghost ml-auto !px-2.5 text-xs text-slate-500 dark:text-slate-400"
-        >
-          {showTable ? "Show chart" : "Show table"}
-        </button>
+        {showRanges && (
+          <div className="ml-auto">
+            <Select
+              ariaLabel="Chart time range"
+              value={rangeDays === null ? "all" : String(rangeDays)}
+              onChange={(v) => {
+                setRangeDays(v === "all" ? null : Number(v));
+                setHover(null);
+              }}
+              options={ranges.map((r) => ({ value: r.value, label: r.label }))}
+            />
+          </div>
+        )}
       </div>
 
-      {showTable ? (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-left text-slate-500 dark:border-white/10 dark:text-slate-400">
-                <th className="py-2 pr-4 font-medium">Date</th>
-                <th className="py-2 pr-4 text-right font-medium">Followers</th>
-                <th className="py-2 text-right font-medium">Following</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...points].reverse().map((p) => (
-                <tr
-                  key={p.date}
-                  className="border-b border-slate-100 dark:border-white/5"
-                >
-                  <td className="py-2 pr-4 text-slate-700 dark:text-slate-200">
-                    {new Date(p.date).toLocaleDateString(undefined, {
-                      dateStyle: "medium",
-                    })}
-                  </td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-slate-900 dark:text-white">
-                    {p.followers.toLocaleString()}
-                  </td>
-                  <td className="py-2 text-right tabular-nums text-slate-900 dark:text-white">
-                    {p.following.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="relative mt-4">
+      <div ref={wrapRef} className="relative mt-4">
           <svg
             ref={svgRef}
             viewBox={`0 0 ${VB_W} ${VB_H}`}
-            className="w-full"
+            className="w-full touch-pan-y"
             role="img"
             aria-label="Followers and following over time"
+            onPointerDown={handleDown}
             onPointerMove={handleMove}
+            onPointerUp={() => setHover(null)}
             onPointerLeave={() => setHover(null)}
           >
             {/* Y gridlines + labels */}
@@ -212,35 +293,12 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
               </g>
             ))}
 
-            {/* X labels */}
-            {points.map((p, i) => {
-              // thin labels if crowded
-              const showEvery = Math.ceil(n / 6);
-              if (n > 6 && i % showEvery !== 0 && i !== n - 1) return null;
-              // Anchor the first/last labels to the edges so they don't overflow.
-              const anchor = i === 0 ? "start" : i === n - 1 ? "end" : "middle";
-              const x =
-                i === 0 ? M.left : i === n - 1 ? VB_W - M.right : xFor(i);
-              return (
-                <text
-                  key={p.date}
-                  x={x}
-                  y={VB_H - M.bottom + 22}
-                  textAnchor={anchor}
-                  fontSize={12}
-                  fill={c.muted}
-                >
-                  {fmtDate(p.date)}
-                </text>
-              );
-            })}
-
             {/* Lines */}
             <path
               d={linePath("following")}
               fill="none"
               stroke={c.following}
-              strokeWidth={2}
+              strokeWidth={3}
               strokeLinejoin="round"
               strokeLinecap="round"
             />
@@ -248,7 +306,7 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
               d={linePath("followers")}
               fill="none"
               stroke={c.followers}
-              strokeWidth={2}
+              strokeWidth={3}
               strokeLinejoin="round"
               strokeLinecap="round"
             />
@@ -266,34 +324,35 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
               />
             )}
 
-            {/* Markers */}
-            {points.map((p, i) => (
-              <g key={p.date}>
+            {/* Markers — only the hovered point gets dots; the rest stay clean. */}
+            {hover !== null && (
+              <g>
                 <circle
-                  cx={xFor(i)}
-                  cy={yFor(p.following)}
-                  r={hover === i ? 5 : 4}
+                  cx={xFor(hover)}
+                  cy={yFor(points[hover].following)}
+                  r={5}
                   fill={c.following}
                   stroke="#fff"
-                  strokeWidth={hover === i ? 2 : 0}
+                  strokeWidth={2}
                 />
                 <circle
-                  cx={xFor(i)}
-                  cy={yFor(p.followers)}
-                  r={hover === i ? 5 : 4}
+                  cx={xFor(hover)}
+                  cy={yFor(points[hover].followers)}
+                  r={5}
                   fill={c.followers}
                   stroke="#fff"
-                  strokeWidth={hover === i ? 2 : 0}
+                  strokeWidth={2}
                 />
               </g>
-            ))}
+            )}
           </svg>
 
           {/* Tooltip */}
           {hover !== null && (
             <div
-              className="pointer-events-none absolute top-2 z-10 -translate-x-1/2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg dark:border-white/10 dark:bg-slate-900"
-              style={{ left: `${(xFor(hover) / VB_W) * 100}%` }}
+              ref={tipRef}
+              className="pointer-events-none absolute top-2 z-10 max-w-[calc(100%-0.5rem)] rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg dark:border-white/10 dark:bg-slate-900"
+              style={{ left: tipLeft }}
             >
               <div className="mb-1 font-semibold text-slate-900 dark:text-white">
                 {new Date(points[hover].date).toLocaleDateString(undefined, {
@@ -323,7 +382,6 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
             </div>
           )}
         </div>
-      )}
     </div>
   );
 }

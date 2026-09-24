@@ -14,8 +14,17 @@ interface Props {
  */
 export default function Tooltip({ content, children, className = '' }: Props) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  // `centerX` is the trigger's centre; triggerTop/Bottom drive the vertical flip.
+  const [pos, setPos] = useState<{
+    triggerTop: number;
+    triggerBottom: number;
+    centerX: number;
+  } | null>(null);
+  // Final, clamped bubble position (px, viewport-relative).
+  const [left, setLeft] = useState(0);
+  const [top, setTop] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
+  const tipRef = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -23,7 +32,11 @@ export default function Tooltip({ content, children, className = '' }: Props) {
       const el = ref.current;
       if (!el) return;
       const r = el.getBoundingClientRect();
-      setPos({ top: r.bottom + 8, left: r.left + r.width / 2 });
+      setPos({
+        triggerTop: r.top,
+        triggerBottom: r.bottom,
+        centerX: r.left + r.width / 2,
+      });
     }
     update();
     window.addEventListener('scroll', update, true);
@@ -33,6 +46,26 @@ export default function Tooltip({ content, children, className = '' }: Props) {
       window.removeEventListener('resize', update);
     };
   }, [open]);
+
+  // Clamp the bubble inside the viewport on both axes, and flip it above the
+  // trigger when there isn't room below. Runs before paint, so there's no jump.
+  useLayoutEffect(() => {
+    if (!open || !pos) return;
+    const tip = tipRef.current;
+    if (!tip) return;
+    const tipW = tip.offsetWidth;
+    const tipH = tip.offsetHeight;
+    const pad = 8;
+    const gap = 8;
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+    setLeft(Math.max(pad, Math.min(pos.centerX - tipW / 2, vw - tipW - pad)));
+    // Prefer below; flip above only if below overflows and above has room.
+    const below = pos.triggerBottom + gap;
+    const flipUp =
+      below + tipH + pad > vh && pos.triggerTop - gap - tipH - pad >= 0;
+    setTop(flipUp ? pos.triggerTop - tipH - gap : below);
+  }, [open, pos]);
 
   useEffect(() => {
     if (!open) return;
@@ -78,9 +111,10 @@ export default function Tooltip({ content, children, className = '' }: Props) {
         pos &&
         createPortal(
           <span
+            ref={tipRef}
             role="tooltip"
-            className="pointer-events-none fixed z-[60] w-max max-w-[220px] -translate-x-1/2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-normal leading-snug text-slate-600 shadow-lg dark:border-white/10 dark:bg-slate-900 dark:text-slate-300"
-            style={{ top: pos.top, left: pos.left }}
+            className="pointer-events-none fixed z-[60] w-max max-w-[220px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-normal leading-snug text-slate-600 shadow-lg dark:border-white/10 dark:bg-slate-900 dark:text-slate-300"
+            style={{ top, left }}
           >
             {content}
           </span>,
