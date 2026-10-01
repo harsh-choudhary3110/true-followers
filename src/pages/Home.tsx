@@ -64,16 +64,16 @@ function HeroPreview() {
           <span className="ml-3 hidden text-xs text-slate-400 sm:block">Your results</span>
         </div>
         {/* stat tiles */}
-        <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
+        <div className="grid auto-rows-fr grid-cols-2 gap-3 p-4 sm:grid-cols-4">
           {stats.map((s) => {
             const Icon = s.icon;
             return (
               <div key={s.label} className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="min-w-0 text-xs font-medium text-slate-500 dark:text-slate-400">
                     {s.label}
                   </span>
-                  <Icon className={`h-4 w-4 ${s.accent}`} />
+                  <Icon className={`h-4 w-4 shrink-0 ${s.accent}`} />
                 </div>
                 <p className="mt-1 text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                   {s.value}

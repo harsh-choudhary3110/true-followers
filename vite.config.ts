@@ -36,22 +36,51 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-      // Generate robots.txt + sitemap.xml with absolute URLs at build time.
+      // Generate robots.txt + sitemap.xml + llms.txt with absolute URLs at build time.
       {
         name: 'seo-files',
         generateBundle() {
-          const routes = ['/', '/guide', '/upload', '/tracker', '/faq', '/privacy'];
+          const routes = [
+            { path: '/', title: 'Home', blurb: 'Compare your Instagram followers and following to see who doesn\'t follow you back, who you don\'t follow back, and your mutuals.' },
+            { path: '/guide', title: 'Guide', blurb: 'Step-by-step guide to download your Instagram followers and following data as JSON (or HTML).' },
+            { path: '/upload', title: 'Upload', blurb: 'Drop your Instagram data export (ZIP, JSON or HTML) to analyze it. Processed entirely in your browser.' },
+            { path: '/tracker', title: 'Unfollower tracker', blurb: 'Save snapshots privately in your browser and compare them over time to see who unfollowed you.' },
+            { path: '/faq', title: 'FAQ', blurb: 'Answers about privacy, Instagram exports, JSON vs HTML, account safety, and how the tool works.' },
+            { path: '/privacy', title: 'Privacy', blurb: 'Everything runs in your browser — nothing uploaded, no accounts, no ads, no cookies.' },
+          ];
           const today = new Date().toISOString().slice(0, 10);
+
           const urls = routes
             .map(
               (r) =>
-                `  <url><loc>${siteUrl}${r}</loc><lastmod>${today}</lastmod></url>`,
+                `  <url><loc>${siteUrl}${r.path}</loc><lastmod>${today}</lastmod></url>`,
             )
             .join('\n');
           const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
-          const robots = `User-agent: *\nAllow: /\nDisallow: /results\n\nSitemap: ${siteUrl}/sitemap.xml\n`;
+
+          // Blanket allow, but name the major AI crawlers explicitly so their
+          // access is unambiguous (and easy to flip to Disallow later).
+          const aiBots = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'PerplexityBot', 'Google-Extended', 'CCBot', 'Applebot-Extended'];
+          const aiRules = aiBots
+            .map((b) => `User-agent: ${b}\nAllow: /\nDisallow: /results\n`)
+            .join('\n');
+          const robots = `User-agent: *\nAllow: /\nDisallow: /results\n\n${aiRules}\nSitemap: ${siteUrl}/sitemap.xml\n`;
+
+          // llms.txt — concise, link-first summary for LLM answer engines.
+          // https://llmstxt.org/
+          const llms = [
+            '# True Followers',
+            '',
+            '> Free, private Instagram follower tracker. Upload the official data export you download from Instagram to see who doesn\'t follow you back, who you don\'t follow back, your mutuals, and to track unfollowers over time. Everything runs in your browser — no login, no password, nothing uploaded, no accounts, and not affiliated with Instagram or Meta.',
+            '',
+            '## Pages',
+            ...routes.map((r) => `- [${r.title}](${siteUrl}${r.path}): ${r.blurb}`),
+            '',
+          ].join('\n');
+
           this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemap });
           this.emitFile({ type: 'asset', fileName: 'robots.txt', source: robots });
+          this.emitFile({ type: 'asset', fileName: 'llms.txt', source: llms });
         },
       },
     ],

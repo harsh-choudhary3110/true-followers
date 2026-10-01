@@ -156,7 +156,7 @@ export default function Results() {
       )}
 
       {/* Stat cards */}
-      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mt-6 grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Followers" value={counts.followers.toLocaleString()} icon={Users} />
         <StatCard
           label="Following"

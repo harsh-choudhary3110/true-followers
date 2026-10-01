@@ -1,5 +1,5 @@
-import { Info, type LucideIcon } from 'lucide-react';
-import Tooltip from './Tooltip';
+import { Info, type LucideIcon } from "lucide-react";
+import Tooltip from "./Tooltip";
 
 interface Props {
   label: string;
@@ -14,21 +14,26 @@ export default function StatCard({
   label,
   value,
   icon: Icon,
-  accent = 'text-fuchsia-600',
+  accent = "text-fuchsia-600",
   note,
 }: Props) {
   return (
     <div className="card p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            {label}
+          </p>
           {note && (
-            <Tooltip content={note} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+            <Tooltip
+              content={note}
+              className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
               <Info className="h-3.5 w-3.5" />
             </Tooltip>
           )}
         </div>
-        <Icon className={`h-5 w-5 ${accent}`} />
+        <Icon className={`h-5 w-5 shrink-0 ${accent}`} />
       </div>
       <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
         {value}

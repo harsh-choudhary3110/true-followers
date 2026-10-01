@@ -19,19 +19,48 @@
     <!-- Per-page title / description / canonical / Open Graph / Twitter are pre-rendered
          into each page by the <Seo> component (vite-react-ssg <Head>). -->
 
-    <!-- Structured data: the tool itself (site-wide) -->
+    <!-- Structured data (site-wide): Organization + WebSite + WebApplication,
+         cross-linked by @id so search engines and AI answer engines treat them
+         as one entity. Per-page FAQPage / HowTo schema is added by each page. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "True Followers",
-        "url": "__SITE_URL__/",
-        "applicationCategory": "UtilitiesApplication",
-        "operatingSystem": "Web",
-        "browserRequirements": "Requires JavaScript",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "description": "Compare your Instagram followers and following privately in your browser. Find who doesn't follow you back, who you don't follow back, mutuals, and track unfollowers — no login, nothing uploaded.",
-        "isAccessibleForFree": true
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "__SITE_URL__/#organization",
+            "name": "True Followers",
+            "url": "__SITE_URL__/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "__SITE_URL__/web-app-manifest-512x512.png",
+              "width": 512,
+              "height": 512
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "__SITE_URL__/#website",
+            "name": "True Followers",
+            "url": "__SITE_URL__/",
+            "publisher": { "@id": "__SITE_URL__/#organization" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "__SITE_URL__/#webapp",
+            "name": "True Followers",
+            "url": "__SITE_URL__/",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Web",
+            "browserRequirements": "Requires JavaScript",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "description": "Compare your Instagram followers and following privately in your browser. Find who doesn't follow you back, who you don't follow back, mutuals, and track unfollowers — no login, nothing uploaded.",
+            "isAccessibleForFree": true,
+            "publisher": { "@id": "__SITE_URL__/#organization" },
+            "isPartOf": { "@id": "__SITE_URL__/#website" }
+          }
+        ]
       }
     </script>
 
